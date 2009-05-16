@@ -15,3 +15,9 @@ IUSE=""
 USE_RUBY="ruby18 ruby19"
 DEPEND=">=dev-lang/ruby-1.8"
 RDEPEND="${DEPEND}"
+
+PATCHES="${FILESDIR}/${P}-destdir-gentoo.patch"
+
+src_install() {
+	DESTDIR="${D}" ruby_einstall "$@" || die
+}
