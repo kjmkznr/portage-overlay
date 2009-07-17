@@ -1,0 +1,28 @@
+#!/sbin/runscript
+# Copyright 1999-2009 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Header: $
+
+depend(){
+	need net
+}
+
+start() {
+	ebegin "Starting ${SVCNAME}"
+	start-stop-daemon --start --quiet \
+	    --exec /usr/sbin/milter-manager \
+	    --pidfile /var/run/milter-manager \
+	    -- --daemon \
+	       --connection-spec "${CONNECTION_SPEC}" \
+	       --user-name "${USER}" \
+	       --group-name "${GROUP}" \
+	       --socket-group-name "${SOCKET_GROUP}" \
+	       ${MILTER_MANAGER_OPTS}
+	eend $?
+}
+
+stop() {
+	ebegin "Stopping ${SVCNAME}"
+	start-stop-daemon --stop --quiet --pidfile /var/run/milter-manager.pid
+	eend $?
+}

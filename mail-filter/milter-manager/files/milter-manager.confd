@@ -1,0 +1,14 @@
+# For debug:
+# MILTER_MANAGER_OPTS="--verbose"
+
+# Effective user:
+USER="milter-manager"
+
+# Effective group:
+GROUP="milter-manager"
+
+# If CONNECTION_SPEC is "unix:", socket is chgrp-ed to $SOCKET_GROUP:
+SOCKET_GROUP="smmsp"
+
+# Socket location to listen connection from MTA:
+CONNECTION_SPEC="unix:/var/run/milter-manager/milter-manager.sock"
