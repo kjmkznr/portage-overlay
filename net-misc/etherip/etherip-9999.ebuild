@@ -5,7 +5,7 @@
 inherit eutils toolchain-funcs git linux-mod
 
 EGIT_REPO_URI="git://github.com/kjmkznr/etherip.git"
-SRC_URI="http://github.com/kjmkznr/etherip/tree/master"
+SRC_URI=""
 KEYWORDS="~amd64"
 
 DESCRIPTION="EtherIP Linux Kernel Module"
@@ -15,7 +15,7 @@ LICENSE="GPL-2"
 SLOT="0"
 IUSE=""
 
-RDEPEND=">=virtual/linux-sources-2.6.24"
+RDEPEND=">=virtual/linux-sources-2.6.29"
 DEPEND="${RDEPEND}"
 
 BUILD_TARGETS="modules"
