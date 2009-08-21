@@ -1,0 +1,12 @@
+diff -uNr bluez-gnome-1.8.old/wizard/main.c bluez-gnome-1.8/wizard/main.c
+--- bluez-gnome-1.8.old/wizard/main.c	2008-10-05 04:32:56.000000000 +0900
++++ bluez-gnome-1.8/wizard/main.c	2009-08-22 00:25:26.934848536 +0900
+@@ -70,7 +70,7 @@
+ 	/* Most headsets are using 0000 as pincode */
+ 	if (target_type == BLUETOOTH_TYPE_HEADSET ||
+ 				target_type == BLUETOOTH_TYPE_HEADPHONE)
+-		pincode = "0000";
++		pincode = "1234";
+ 
+ 	text = g_strdup_printf(_("Please enter the following PIN code: %s"),
+ 								pincode);
