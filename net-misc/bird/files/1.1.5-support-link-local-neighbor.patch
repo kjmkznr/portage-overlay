@@ -1,0 +1,95 @@
+diff --git a/nest/neighbor.c b/nest/neighbor.c
+index 2c5af6a..73b172d 100644
+--- a/nest/neighbor.c
++++ b/nest/neighbor.c
+@@ -115,7 +115,7 @@ neigh_find(struct proto *p, ip_addr *a, unsigned flags)
+   class = ipa_classify(*a);
+   if (class < 0)			/* Invalid address */
+     return NULL;
+-  if ((class & IADDR_SCOPE_MASK) < SCOPE_SITE ||
++  if ((class & IADDR_SCOPE_MASK) < SCOPE_LINK ||
+       !(class & IADDR_HOST))
+     return NULL;			/* Bad scope or a somecast */
+ 
+diff --git a/proto/bgp/bgp.c b/proto/bgp/bgp.c
+index b38c6b1..fc7a2ed 100644
+--- a/proto/bgp/bgp.c
++++ b/proto/bgp/bgp.c
+@@ -536,6 +536,10 @@ bgp_connect(struct bgp_proto *p)	/* Enter Connect state and start establishing c
+   s->tos = IP_PREC_INTERNET_CONTROL;
+   s->password = p->cf->password;
+   s->tx_hook = bgp_connected;
++  if(p->cf->source_iface)
++      s->iface = if_find_by_name(p->cf->source_iface);
++  else
++      s->iface = p->neigh->iface;
+   BGP_TRACE(D_EVENTS, "Connecting to %I from local address %I", s->daddr, s->saddr);
+   bgp_setup_conn(p, conn);
+   bgp_setup_sk(p, conn, s);
+diff --git a/proto/bgp/bgp.h b/proto/bgp/bgp.h
+index 0a82be2..d3a97ff 100644
+--- a/proto/bgp/bgp.h
++++ b/proto/bgp/bgp.h
+@@ -22,6 +22,7 @@ struct bgp_config {
+   int multihop;				/* Number of hops if multihop */
+   ip_addr multihop_via;			/* Multihop: address to route to */
+   ip_addr source_addr;			/* Source address to use */
++  char *source_iface;			/* Source interface to use */
+   int next_hop_self;			/* Always set next hop to local IP address */
+   int compare_path_lengths;		/* Use path lengths when selecting best route */
+   u32 default_local_pref;		/* Default value for LOCAL_PREF attribute */
+diff --git a/proto/bgp/config.Y b/proto/bgp/config.Y
+index 7360820..bbe3a43 100644
+--- a/proto/bgp/config.Y
++++ b/proto/bgp/config.Y
+@@ -21,7 +21,7 @@ CF_KEYWORDS(BGP, LOCAL, NEIGHBOR, AS, HOLD, TIME, CONNECT, RETRY, KEEPALIVE,
+ 	ERROR, START, DELAY, FORGET, WAIT, ENABLE, DISABLE, AFTER,
+ 	BGP_PATH, BGP_LOCAL_PREF, BGP_MED, BGP_ORIGIN, BGP_NEXT_HOP,
+ 	BGP_ATOMIC_AGGR, BGP_AGGREGATOR, BGP_COMMUNITY, SOURCE, ADDRESS,
+-	PASSWORD, RR, RS, CLIENT, CLUSTER, ID, AS4, ADVERTISE, IPV4,
++	INTERFACE, PASSWORD, RR, RS, CLIENT, CLUSTER, ID, AS4, ADVERTISE, IPV4,
+ 	CAPABILITIES, LIMIT, PASSIVE)
+ 
+ CF_GRAMMAR
+@@ -68,6 +68,7 @@ bgp_proto:
+  | bgp_proto DEFAULT BGP_MED expr ';' { BGP_CFG->default_med = $4; }
+  | bgp_proto DEFAULT BGP_LOCAL_PREF expr ';' { BGP_CFG->default_local_pref = $4; }
+  | bgp_proto SOURCE ADDRESS ipa ';' { BGP_CFG->source_addr = $4; }
++ | bgp_proto SOURCE INTERFACE TEXT ';' { BGP_CFG->source_iface = $4; }
+  | bgp_proto START DELAY TIME expr ';' { BGP_CFG->start_delay_time = $5; }
+  | bgp_proto ERROR FORGET TIME expr ';' { BGP_CFG->error_amnesia_time = $5; } 
+  | bgp_proto ERROR WAIT TIME expr ',' expr ';' { BGP_CFG->error_delay_time_min = $5; BGP_CFG->error_delay_time_max = $7; }
+diff --git a/sysdep/unix/io.c b/sysdep/unix/io.c
+index 330aea4..34369b1 100644
+--- a/sysdep/unix/io.c
++++ b/sysdep/unix/io.c
+@@ -17,6 +17,7 @@
+ #include <sys/un.h>
+ #include <unistd.h>
+ #include <errno.h>
++#include <net/if.h>
+ 
+ #include "nest/bird.h"
+ #include "lib/lists.h"
+@@ -911,6 +912,21 @@ sk_open(sock *s)
+       break;
+       }
+     }
++#ifdef IPV6
++    /* Use link local address */
++    if(s->iface){
++        struct ifa *a;
++        WALK_LIST(a, s->iface->addrs)
++        if(a->scope == SCOPE_LINK)
++        {
++            struct ifreq ifr;
++            log(L_TRACE "Using Interface %s", s->iface->name);
++            strcpy(ifr.ifr_name, s->iface->name);
++            if (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, &ifr, sizeof(ifr)) < 0)
++                ERR("SO_BINDTODEVICE");
++        }
++    }
++#endif /* IPV6 */
+   if (has_src)
+     {
+       int port;
