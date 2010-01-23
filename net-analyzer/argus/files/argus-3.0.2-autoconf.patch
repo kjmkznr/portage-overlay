@@ -1,0 +1,12 @@
+diff -uNr argus-3.0.2.orig/aclocal.m4 argus-3.0.2/aclocal.m4
+--- argus-3.0.2.orig/aclocal.m4	2009-08-17 23:40:08.000000000 +0900
++++ argus-3.0.2/aclocal.m4	2010-01-23 11:18:14.000000000 +0900
+@@ -93,7 +93,7 @@
+ dnl
+ AC_DEFUN(AC_LBL_C_INIT,
+     [AC_PREREQ(2.12)
+-    AC_BEFORE([$0], [AC_PROG_CC])
++    AC_REQUIRE([AC_PROG_CC])
+     AC_BEFORE([$0], [AC_LBL_FIXINCLUDES])
+     AC_BEFORE([$0], [AC_LBL_DEVEL])
+     AC_BEFORE([$0], [AC_QOSIENT_DEBUG])
