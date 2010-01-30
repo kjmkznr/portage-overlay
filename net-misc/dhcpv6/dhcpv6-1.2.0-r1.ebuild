@@ -36,6 +36,7 @@ src_install() {
 	emake install DESTDIR="${D}" || die
 	dodoc AUTHORS ChangeLog README TODO RFC*
 	dodir /var/lib/dhcpv6
+	dodir /var/run/dhcpv6
 
 	rm -rf "${D}"/etc/{rc.d,sysconfig}
 	mkd s S init
