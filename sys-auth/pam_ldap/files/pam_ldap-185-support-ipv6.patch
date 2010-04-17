@@ -75,7 +75,7 @@ diff -uNr pam_ldap-185.orig/pam_ldap.c pam_ldap-185.new/pam_ldap.c
 -    return PAM_SUCCESS;
 -
 -  if (h->h_aliases != NULL)
-+  for (rp = result; rp != NULL; rp = rp->ai_next)
++  for (rp = result; rp->ai_canonname != NULL; rp = rp->ai_next)
      {
 -      for (q = h->h_aliases; *q != NULL; q++)
 -	{
