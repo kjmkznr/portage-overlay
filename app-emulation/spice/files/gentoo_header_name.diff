@@ -1,0 +1,220 @@
+diff -r 4930b6670a17 client/audio_channels.h
+--- a/client/audio_channels.h	Tue Mar 30 17:03:22 2010 +0300
++++ b/client/audio_channels.h	Tue Mar 30 17:16:31 2010 +0300
+@@ -18,7 +18,7 @@
+ #ifndef _H_AUDIO_CHANNELS
+ #define _H_AUDIO_CHANNELS
+ 
+-#include <celt051/celt.h>
++#include <celt/celt.h>
+ 
+ #include "red_channel.h"
+ #include "debug.h"
+diff -r 4930b6670a17 client/playback_channel.cpp
+--- a/client/playback_channel.cpp	Tue Mar 30 17:03:22 2010 +0300
++++ b/client/playback_channel.cpp	Tue Mar 30 17:16:31 2010 +0300
+@@ -177,11 +177,11 @@
+     delete _wave_player;
+ 
+     if (_celt_decoder) {
+-        celt051_decoder_destroy(_celt_decoder);
++        celt_decoder_destroy(_celt_decoder);
+     }
+ 
+     if (_celt_mode) {
+-        celt051_mode_destroy(_celt_mode);
++        celt_mode_destroy(_celt_mode);
+     }
+ }
+ 
+@@ -267,12 +267,12 @@
+             return;
+         }
+ 
+-        if (!(_celt_mode = celt051_mode_create(start->frequency, start->channels,
++        if (!(_celt_mode = celt_mode_create(start->frequency, start->channels,
+                                                frame_size, &celt_mode_err))) {
+             THROW("create celt mode failed %d", celt_mode_err);
+         }
+ 
+-        if (!(_celt_decoder = celt051_decoder_create(_celt_mode))) {
++        if (!(_celt_decoder = celt_decoder_create(_celt_mode))) {
+             THROW("create celt decoder");
+         }
+     }
+@@ -322,9 +322,9 @@
+     RedPlaybackPacket* packet = (RedPlaybackPacket*)message->data();
+     uint8_t* data = (uint8_t*)(packet + 1);
+     uint32_t size = message->size() - sizeof(*packet);
+-    celt_int16_t pcm[256 * 2];
++    celt_int16 pcm[256 * 2];
+ 
+-    if (celt051_decode(_celt_decoder, data, size, pcm) != CELT_OK) {
++    if (celt_decode(_celt_decoder, data, size, pcm) != CELT_OK) {
+         THROW("celt decode failed");
+     }
+ #ifdef WAVE_CAPTURE
+diff -r 4930b6670a17 client/record_channel.cpp
+--- a/client/record_channel.cpp	Tue Mar 30 17:03:22 2010 +0300
++++ b/client/record_channel.cpp	Tue Mar 30 17:16:31 2010 +0300
+@@ -103,10 +103,10 @@
+     delete _wave_recorder;
+ 
+     if (_celt_encoder) {
+-        celt051_encoder_destroy(_celt_encoder);
++        celt_encoder_destroy(_celt_encoder);
+     }
+     if (_celt_mode) {
+-        celt051_mode_destroy(_celt_mode);
++        celt_mode_destroy(_celt_mode);
+     }
+ }
+ 
+@@ -160,12 +160,12 @@
+     int frame_size = 256;
+     int celt_mode_err;
+     _frame_bytes = frame_size * bits_per_sample * start->channels / 8;
+-    if (!(_celt_mode = celt051_mode_create(start->frequency, start->channels, frame_size,
++    if (!(_celt_mode = celt_mode_create(start->frequency, start->channels, frame_size,
+                                            &celt_mode_err))) {
+         THROW("create celt mode failed %d", celt_mode_err);
+     }
+ 
+-    if (!(_celt_encoder = celt051_encoder_create(_celt_mode))) {
++    if (!(_celt_encoder = celt_encoder_create(_celt_mode))) {
+         THROW("create celt encoder failed");
+     }
+ 
+@@ -183,9 +183,9 @@
+     }
+     ASSERT(_celt_mode && _celt_encoder);
+     _wave_recorder->stop();
+-    celt051_encoder_destroy(_celt_encoder);
++    celt_encoder_destroy(_celt_encoder);
+     _celt_encoder = NULL;
+-    celt051_mode_destroy(_celt_mode);
++    celt_mode_destroy(_celt_mode);
+     _celt_mode = NULL;
+     delete _wave_recorder;
+     _wave_recorder = NULL;
+@@ -245,7 +245,7 @@
+     int n;
+ 
+     if (_mode == RED_AUDIO_DATA_MODE_CELT_0_5_1) {
+-        n = celt051_encode(_celt_encoder, (celt_int16_t *)frame, NULL, celt_buf,
++        n = celt_encode(_celt_encoder, (celt_int16 *)frame, NULL, celt_buf,
+                            CELT_COMPRESSED_FRAME_BYTES);
+         if (n < 0) {
+             THROW("celt encode failed");
+diff -r 4930b6670a17 server/snd_worker.c
+--- a/server/snd_worker.c	Tue Mar 30 17:03:22 2010 +0300
++++ b/server/snd_worker.c	Tue Mar 30 17:16:31 2010 +0300
+@@ -20,7 +20,7 @@
+ #include <sys/socket.h>
+ #include <netinet/ip.h>
+ #include <netinet/tcp.h>
+-#include <celt051/celt.h>
++#include <celt/celt.h>
+ 
+ #include "vd_interface.h"
+ #include "red_common.h"
+@@ -340,8 +340,8 @@
+     size = message->size - sizeof(*packet);
+ 
+     if (record_channel->mode == RED_AUDIO_DATA_MODE_CELT_0_5_1) {
+-        int celt_err = celt051_decode(record_channel->celt_decoder, packet->data, size,
+-                                      (celt_int16_t *)record_channel->celt_buf);
++        int celt_err = celt_decode(record_channel->celt_decoder, packet->data, size,
++                                      (celt_int16 *)record_channel->celt_buf);
+         if (celt_err != CELT_OK) {
+             red_printf("celt decode failed (%d)", celt_err);
+             return FALSE;
+@@ -656,7 +656,7 @@
+     frame = playback_channel->in_progress;
+     snd_add_buf(channel, &frame->time, sizeof(frame->time));
+     if (playback_channel->mode == RED_AUDIO_DATA_MODE_CELT_0_5_1) {
+-        int n = celt051_encode(playback_channel->celt_encoder, (celt_int16_t *)frame->samples, NULL,
++        int n = celt_encode(playback_channel->celt_encoder, (celt_int16 *)frame->samples, NULL,
+                                playback_channel->send_data.u.celt_buf, CELT_COMPRESSED_FRAME_BYTES);
+         if (n < 0) {
+             red_printf("celt encode failed");
+@@ -939,8 +939,8 @@
+     }
+     interface->unplug(interface, playback_channel->plug_ref);
+ 
+-    celt051_encoder_destroy(playback_channel->celt_encoder);
+-    celt051_mode_destroy(playback_channel->celt_mode);
++    celt_encoder_destroy(playback_channel->celt_encoder);
++    celt_mode_destroy(playback_channel->celt_mode);
+ }
+ 
+ static void snd_set_playback_peer(Channel *channel, RedsStreamContext *peer, int migration,
+@@ -955,13 +955,13 @@
+ 
+     snd_disconnect_channel(worker->connection);
+ 
+-    if (!(celt_mode = celt051_mode_create(VD_INTERFACE_PLAYBACK_FREQ, VD_INTERFACE_PLAYBACK_CHAN,
++    if (!(celt_mode = celt_mode_create(VD_INTERFACE_PLAYBACK_FREQ, VD_INTERFACE_PLAYBACK_CHAN,
+                                           FRAME_SIZE, &celt_error))) {
+         red_printf("create celt mode failed %d", celt_error);
+         return;
+     }
+ 
+-    if (!(celt_encoder = celt051_encoder_create(celt_mode))) {
++    if (!(celt_encoder = celt_encoder_create(celt_mode))) {
+         red_printf("create celt encoder failed");
+         goto error_1;
+     }
+@@ -998,10 +998,10 @@
+     return;
+ 
+ error_2:
+-    celt051_encoder_destroy(celt_encoder);
++    celt_encoder_destroy(celt_encoder);
+ 
+ error_1:
+-    celt051_mode_destroy(celt_mode);
++    celt_mode_destroy(celt_mode);
+ }
+ 
+ static void snd_record_migrate(Channel *channel)
+@@ -1098,8 +1098,8 @@
+     RecordInterface *interface = (RecordInterface *)channel->worker->interface;
+     interface->unplug(interface, record_channel->plug_ref);
+ 
+-    celt051_decoder_destroy(record_channel->celt_decoder);
+-    celt051_mode_destroy(record_channel->celt_mode);
++    celt_decoder_destroy(record_channel->celt_decoder);
++    celt_mode_destroy(record_channel->celt_mode);
+ }
+ 
+ static void snd_set_record_peer(Channel *channel, RedsStreamContext *peer, int migration,
+@@ -1114,13 +1114,13 @@
+ 
+     snd_disconnect_channel(worker->connection);
+ 
+-    if (!(celt_mode = celt051_mode_create(VD_INTERFACE_RECORD_FREQ, VD_INTERFACE_RECORD_CHAN,
++    if (!(celt_mode = celt_mode_create(VD_INTERFACE_RECORD_FREQ, VD_INTERFACE_RECORD_CHAN,
+                                           FRAME_SIZE, &celt_error))) {
+         red_printf("create celt mode failed %d", celt_error);
+         return;
+     }
+ 
+-    if (!(celt_decoder = celt051_decoder_create(celt_mode))) {
++    if (!(celt_decoder = celt_decoder_create(celt_mode))) {
+         red_printf("create celt decoder failed");
+         goto error_1;
+     }
+@@ -1151,10 +1151,10 @@
+     return;
+ 
+ error_1:
+-    celt051_decoder_destroy(celt_decoder);
++    celt_decoder_destroy(celt_decoder);
+ 
+ error_2:
+-    celt051_mode_destroy(celt_mode);
++    celt_mode_destroy(celt_mode);
+ }
+ 
+ static void snd_playback_migrate(Channel *channel)

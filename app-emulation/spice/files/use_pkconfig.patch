@@ -1,0 +1,46 @@
+--- configure.ac.orig	2010-03-30 16:46:18.566126862 +0300
++++ configure.ac	2010-03-30 16:48:16.670172569 +0300
+@@ -112,11 +112,11 @@
+ AC_SUBST(QCAIRO_LIBDIR)
+ SPICE_REQUIRES+=" qcairo >= 1.4.6"
+ 
+-PKG_CHECK_MODULES(CELT051, celt051 >= 0.5.1.1)
+-AC_SUBST(CELT051_CFLAGS)
+-AC_SUBST(CELT051_LIBS)
+-AC_SUBST(CELT051_LIBDIR)
+-SPICE_REQUIRES+=" celt051 >= 0.5.1.1"
++PKG_CHECK_MODULES(CELT, celt >= 0.5.1.1)
++AC_SUBST(CELT_CFLAGS)
++AC_SUBST(CELT_LIBS)
++AC_SUBST(CELT_LIBDIR)
++SPICE_REQUIRES+=" celt >= 0.5.1.1"
+ 
+ PKG_CHECK_MODULES(FFMPEG, libavcodec libavutil)
+ AC_SUBST(FFMPEG_CFLAGS)
+@@ -141,23 +141,10 @@
+ AC_SUBST(SSL_LIBS)
+ SPICE_REQUIRES+=" openssl"
+ 
+-# These are commented out because the gl libraries on RHEL 5 do not have pkgconfig files
+-#
+-# PKG_CHECK_MODULES(GL, gl glu)
+-# AC_SUBST(GL_CFLAGS)
+-# AC_SUBST(GL_LIBS)
+-# SPICE_REQUIRES+=" gl glu"
+-
+-have_gl=yes
+-AC_CHECK_LIB(GL, glBlendFunc, GL_LIBS="$GL_LIBS -lGL", have_gl=no)
+-AC_CHECK_LIB(GLU, gluSphere, GL_LIBS="$GL_LIBS -lGLU", have_gl=no)
+-
+-if test "x$have_gl" = "xno"; then
+-   AC_MSG_ERROR([GL libraries not available])
+-fi
+-
++PKG_CHECK_MODULES(GL, gl glu)
++AC_SUBST(GL_CFLAGS)
+ AC_SUBST(GL_LIBS)
+-SPICE_NONPKGCONFIG_LIBS+=" $GL_LIBS"
++SPICE_REQUIRES+=" gl glu"
+ 
+ PKG_CHECK_MODULES(XRANDR, xrandr)
+ AC_SUBST(XRANDR_CFLAGS)

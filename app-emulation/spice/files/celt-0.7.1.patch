@@ -1,0 +1,76 @@
+--- server/snd_worker.c.orig	2010-07-03 12:40:26.919747496 +0900
++++ server/snd_worker.c	2010-07-03 12:48:03.927285499 +0900
+@@ -955,13 +955,13 @@
+ 
+     snd_disconnect_channel(worker->connection);
+ 
+-    if (!(celt_mode = celt_mode_create(VD_INTERFACE_PLAYBACK_FREQ, VD_INTERFACE_PLAYBACK_CHAN,
++    if (!(celt_mode = celt_mode_create(VD_INTERFACE_PLAYBACK_FREQ, 
+                                           FRAME_SIZE, &celt_error))) {
+         red_printf("create celt mode failed %d", celt_error);
+         return;
+     }
+ 
+-    if (!(celt_encoder = celt_encoder_create(celt_mode))) {
++    if (!(celt_encoder = celt_encoder_create(celt_mode, VD_INTERFACE_PLAYBACK_CHAN, &celt_error))) {
+         red_printf("create celt encoder failed");
+         goto error_1;
+     }
+@@ -1114,14 +1114,14 @@
+ 
+     snd_disconnect_channel(worker->connection);
+ 
+-    if (!(celt_mode = celt_mode_create(VD_INTERFACE_RECORD_FREQ, VD_INTERFACE_RECORD_CHAN,
++    if (!(celt_mode = celt_mode_create(VD_INTERFACE_RECORD_FREQ, 
+                                           FRAME_SIZE, &celt_error))) {
+         red_printf("create celt mode failed %d", celt_error);
+         return;
+     }
+ 
+-    if (!(celt_decoder = celt_decoder_create(celt_mode))) {
+-        red_printf("create celt decoder failed");
++    if (!(celt_decoder = celt_decoder_create(celt_mode, VD_INTERFACE_RECORD_CHAN, &celt_error))) {
++        red_printf("create celt decoder failed %d", celt_error);
+         goto error_1;
+     }
+ 
+--- client/playback_channel.cpp.orig	2010-07-03 13:01:49.726903259 +0900
++++ client/playback_channel.cpp	2010-07-03 13:01:51.695039519 +0900
+@@ -267,13 +267,14 @@
+             return;
+         }
+ 
+-        if (!(_celt_mode = celt_mode_create(start->frequency, start->channels,
++        if (!(_celt_mode = celt_mode_create(start->frequency, 
+                                                frame_size, &celt_mode_err))) {
+             THROW("create celt mode failed %d", celt_mode_err);
+         }
+ 
+-        if (!(_celt_decoder = celt_decoder_create(_celt_mode))) {
+-            THROW("create celt decoder");
++        if (!(_celt_decoder = celt_decoder_create(_celt_mode, start->channels,
++                                               &celt_mode_err))) {
++            THROW("create celt decoder %d", celt_mode_err);
+         }
+     }
+     _playing = true;
+--- ./client/record_channel.cpp.orig	2010-07-03 13:02:15.720545150 +0900
++++ ./client/record_channel.cpp	2010-07-03 13:03:28.301076082 +0900
+@@ -160,13 +160,14 @@
+     int frame_size = 256;
+     int celt_mode_err;
+     _frame_bytes = frame_size * bits_per_sample * start->channels / 8;
+-    if (!(_celt_mode = celt_mode_create(start->frequency, start->channels, frame_size,
++    if (!(_celt_mode = celt_mode_create(start->frequency, start->channels,
+                                            &celt_mode_err))) {
+         THROW("create celt mode failed %d", celt_mode_err);
+     }
+ 
+-    if (!(_celt_encoder = celt_encoder_create(_celt_mode))) {
+-        THROW("create celt encoder failed");
++    if (!(_celt_encoder = celt_encoder_create(_celt_mode, frame_size,
++                                           &celt_mode_err))) {
++        THROW("create celt encoder failed %d", celt_mode_err);
+     }
+ 
+     send_start_mark();
