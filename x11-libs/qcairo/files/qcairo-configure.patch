@@ -1,0 +1,23 @@
+From 0a5ec9802a39dee240a1a3476af1ef8a7db9b6b3 Mon Sep 17 00:00:00 2001
+From: M Joonas Pihlaja <jpihlaja@cc.helsinki.fi>
+Date: Sat, 20 Jun 2009 12:16:51 +0000
+Subject: [build] Look for libpng.pc as well when configuring.
+
+The OpenBSD png package installs only libpng.pc and not
+any of libpng{13,12,10}.pc.
+---
+diff --git a/configure.ac b/configure.ac
+index 8a89f9d..854972e 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -161,7 +161,7 @@ CAIRO_ENABLE_FUNCTIONS(png, PNG, yes, [
+   AC_ARG_VAR([png_REQUIRES], [module name for libpng to search for using pkg-config])
+   if test "x$png_REQUIRES" = x; then
+     # libpng13 is GnuWin32's libpng-1.2.8 :-(
+-    for l in libpng12 libpng13 libpng10 ; do
++    for l in libpng12 libpng13 libpng10 libpng; do
+       if $PKG_CONFIG --exists $l ; then
+         png_REQUIRES=$l
+         use_png=yes
+--
+cgit v0.8.3-6-g21f6
