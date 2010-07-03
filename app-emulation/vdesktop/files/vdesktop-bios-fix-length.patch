@@ -1,0 +1,15 @@
+バイナリー・ファイルvdesktop/bios/BIOS-bochs-latestとvdesktop.new/bios/BIOS-bochs-latestは違います
+バイナリー・ファイルvdesktop/bios/BIOS-bochs-legacyとvdesktop.new/bios/BIOS-bochs-legacyは違います
+バイナリー・ファイルvdesktop/bios/acpi-dsdt.amlとvdesktop.new/bios/acpi-dsdt.amlは違います
+diff -uNr vdesktop/bios/acpi-dsdt.dsl vdesktop.new/bios/acpi-dsdt.dsl
+--- vdesktop/bios/acpi-dsdt.dsl	2009-10-29 21:44:32.000000000 +0900
++++ vdesktop.new/bios/acpi-dsdt.dsl	2010-07-04 00:17:07.507038443 +0900
+@@ -303,7 +303,7 @@
+                     0xC0000000,         // Address Range Minimum
+                     0xFEBFFFFF,         // Address Range Maximum
+                     0x00000000,         // Address Translation Offset
+-                    0x1EC00000,         // Address Length
++                    0x3EC00000,         // Address Length
+                     ,, , AddressRangeMemory, TypeStatic)
+             })
+         }
