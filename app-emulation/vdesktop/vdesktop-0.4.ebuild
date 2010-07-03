@@ -14,7 +14,7 @@ SRC_URI="http://www.spice-space.org/download/${PN}_0_4.tar.bz2"
 
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="~x86 ~amd64"
+KEYWORDS="~amd64"
 IUSE=""
 
 DEPEND="app-emulation/spice
