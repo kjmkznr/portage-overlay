@@ -1,0 +1,13 @@
+--- spice.proto	2010-07-08 00:35:28.211071489 +0900
++++ /tmp/spice.proto	2010-07-08 00:35:11.942090924 +0900
+@@ -989,8 +989,8 @@
+     tunnel_ip_type type;
+     switch (type) {
+     case IPv4:
+-	uint8 ipv4[4] @ctype(uint8_t);
+-    } u @end @nomarshal;
++	uint8 ipv4[4] @ctype(uint8_t) @end;
++    } u @nomarshal;
+ } @ctype(SpiceMsgTunnelIpInfo);
+ 
+ channel TunnelChannel : BaseChannel {
