@@ -27,7 +27,8 @@ DEPEND="dev-util/pkgconfig
 	<dev-lang/python-3
 	gui? ( =dev-games/cegui-0.6*[opengl] )
 	>=x11-libs/pixman-0.17.2
-	>=sys-devel/gcc-4.1"
+	>=sys-devel/gcc-4.1
+	app-emulation/spice-protocol"
 
 RDEPEND=">=x11-libs/pixman-0.17.2"
 
