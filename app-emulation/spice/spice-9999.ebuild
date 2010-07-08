@@ -18,17 +18,17 @@ EGIT_REPO_URI="git://git.freedesktop.org/git/spice/spice"
 LICENSE="GPL-2"
 SLOT="0"
 KEYWORDS="~x86 ~amd64"
-IUSE=""
+IUSE="opengl gui"
 
 DEPEND="dev-util/pkgconfig
 	sys-devel/libtool
 	dev-python/pyparsing
 	<dev-lang/python-3
-	=dev-games/cegui-0.6*
+	gui? ( =dev-games/cegui-0.6*[opengl] )
 	>=x11-libs/pixman-0.17.2
 	>=sys-devel/gcc-4.1"
 
-RDEPEND=""
+RDEPEND=">=x11-libs/pixman-0.17.2"
 
 S="${WORKDIR}/${PN}"
 
@@ -41,9 +41,30 @@ src_prepare() {
 	epatch "${FILESDIR}"/spice-9999-20100707-use_pkconfig.patch || die "epatch failed"
 	epatch "${FILESDIR}"/spice-9999-20100707-celt-0.7.1.patch || die "epatch failed"
 	epatch "${FILESDIR}"/spice-9999-20100707-spice.proto.patch || die "epatch failed"
-	append-ldflags -lcelt0
+	if use opengl ; then
+		epatch "${FILESDIR}"/spice-9999-20100707-use-opengl.patch || die "epatch failed"
+	fi
 	eautoreconf || die
 }
+
+src_compile() {
+	append-ldflags -lcelt0
+	if use opengl ; then
+		myconf="--enable-opengl"
+	fi
+	if use gui ; then
+		myconf="--enable-gui"
+		econf ${myconf} || die
+		emake || die
+	else
+		cd "${S}/server"
+		emake || die
+	fi
+}
+
 src_install() {
+	if ! use gui ; then
+		cd "${S}/server"
+	fi
 	emake DESTDIR="${D}" install || die
 }
