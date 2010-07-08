@@ -14,6 +14,7 @@ SRC_URI=""
 EGIT_BRANCH="master"
 #EGIT_REPO_URI="git://anongit.freedesktop.org/~kraxel/spice"
 EGIT_REPO_URI="git://git.freedesktop.org/git/spice/spice"
+EGIT_COMMIT="4f54596e0113c0692c10cfc1c25400c8070d67b3"
 
 LICENSE="GPL-2"
 SLOT="0"
