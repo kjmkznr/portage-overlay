@@ -14,7 +14,8 @@ SRC_URI=""
 EGIT_BRANCH="master"
 #EGIT_REPO_URI="git://anongit.freedesktop.org/~kraxel/spice"
 EGIT_REPO_URI="git://git.freedesktop.org/git/spice/spice"
-EGIT_COMMIT="4f54596e0113c0692c10cfc1c25400c8070d67b3"
+# 2010/07/09
+EGIT_COMMIT="bc5c34584168d0c6c0d1b9b49c2344f8c12c63b1"
 
 LICENSE="GPL-2"
 SLOT="0"
@@ -69,6 +70,8 @@ src_compile() {
 
 src_install() {
 	if ! use gui ; then
+		insinto "/usr/lib/pkgconfig"
+		doins spice-server.pc
 		cd "${S}/server"
 	fi
 	emake DESTDIR="${D}" install || die

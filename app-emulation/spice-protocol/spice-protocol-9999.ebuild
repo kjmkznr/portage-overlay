@@ -13,7 +13,10 @@ HOMEPAGE="http://www.spice-space.org"
 SRC_URI=""
 EGIT_BRANCH="master"
 EGIT_REPO_URI="git://anongit.freedesktop.org/spice/spice-protocol"
-EGIT_COMMIT="3bc42870d020c8dc6804f1f3c6b0da9d7d6193a9"
+#EGIT_COMMIT="3bc42870d020c8dc6804f1f3c6b0da9d7d6193a9"
+#EGIT_COMMIT="b25441f26b968fa787cb615aad383f6b7947b434"
+# 2010/07/09
+EGIT_COMMIT="a9bbc090a5c95f017c6962aacadaa59b5d97908b"
 
 LICENSE="GPL-2"
 SLOT="0"
