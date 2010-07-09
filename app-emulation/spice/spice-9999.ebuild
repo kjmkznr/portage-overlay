@@ -26,11 +26,14 @@ DEPEND="dev-util/pkgconfig
 	dev-python/pyparsing
 	<dev-lang/python-3
 	gui? ( =dev-games/cegui-0.6*[opengl] )
-	>=x11-libs/pixman-0.17.2
+	>=x11-libs/pixman-0.17.7
 	>=sys-devel/gcc-4.1
+	media-libs/alsa-lib
+	media-libs/jpeg
 	app-emulation/spice-protocol"
 
-RDEPEND=">=x11-libs/pixman-0.17.2"
+RDEPEND=">=x11-libs/pixman-0.17.7
+	media-libs/jpeg"
 
 S="${WORKDIR}/${PN}"
 
