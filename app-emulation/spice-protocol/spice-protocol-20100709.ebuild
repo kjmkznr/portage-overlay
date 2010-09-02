@@ -20,7 +20,7 @@ EGIT_COMMIT="a9bbc090a5c95f017c6962aacadaa59b5d97908b"
 
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="~x86 ~amd64"
+KEYWORDS=""
 IUSE=""
 
 DEPEND="dev-util/pkgconfig

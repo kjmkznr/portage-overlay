@@ -18,7 +18,7 @@ EGIT_COMMIT="c44b6acb09c195979266d44d3bbd9dab88e4b71c"
 
 LICENSE="GPL-2"
 SLOT="0"
-KEYWORDS="~x86 ~amd64"
+KEYWORDS=""
 IUSE="opengl gui"
 
 DEPEND="dev-util/pkgconfig
