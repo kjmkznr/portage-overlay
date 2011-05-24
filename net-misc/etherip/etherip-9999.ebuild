@@ -15,7 +15,7 @@ LICENSE="GPL-2"
 SLOT="0"
 IUSE=""
 
-RDEPEND=">=virtual/linux-sources-2.6.29"
+RDEPEND=">=virtual/linux-sources-2.6"
 DEPEND="${RDEPEND}"
 
 BUILD_TARGETS="modules"
