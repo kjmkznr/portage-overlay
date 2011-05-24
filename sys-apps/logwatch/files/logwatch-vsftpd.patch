@@ -1,0 +1,57 @@
+--- logwatch-7.3.1/scripts/logwatch.pl.pom	2006-09-16 06:04:14.000000000 +0200
++++ logwatch-7.3.1/scripts/logwatch.pl	2006-11-29 13:16:22.000000000 +0100
+@@ -917,11 +917,16 @@
+    my $FilterText = " ";
+    foreach (sort keys %{$LogFileData{$LogFile}}) {
+       my $cmd = $_;
++      
+       if ($cmd =~ s/^\d+-\*//) {
+          if (-f "$ConfigDir/scripts/shared/$cmd") {
+             $FilterText .= ("| $PerlVersion $ConfigDir/scripts/shared/$cmd '$LogFileData{$LogFile}{$_}'" );
+          } elsif (-f "$BaseDir/scripts/shared/$cmd") {
+-            $FilterText .= ("| $PerlVersion $BaseDir/scripts/shared/$cmd '$LogFileData{$LogFile}{$_}'" );
++             if ($LogFile =~ /^vsftpd$/ ) {
++                 $FilterText .= ("| $PerlVersion $BaseDir/scripts/shared/applyvsftpddate '$LogFileData{$LogFile}{$_}'" );
++	     } else {
++                 $FilterText .= ("| $PerlVersion $BaseDir/scripts/shared/$cmd '$LogFileData{$LogFile}{$_}'" );      
++             }
+          } else {
+ 	     die "Cannot find shared script $cmd\n";
+          }
+--- logwatch-7.3.1/scripts/shared/applyvsftpddate.pom	2006-11-29 13:13:28.000000000 +0100
++++ logwatch-7.3.1/scripts/shared/applyvsftpddate	2006-11-29 13:10:26.000000000 +0100
+@@ -0,0 +1,34 @@
++##########################################################################
++# $Id: applystddate,v 1.18 2005/10/22 00:19:56 bjorn Exp $
++##########################################################################
++
++########################################################
++# This was written and is maintained by:
++#    Kirk Bauer <kirk@kaybee.org>
++#
++# Please send all comments, suggestions, bug reports,
++#    etc, to logwatch-devel@logwatch.org
++########################################################
++
++use Logwatch ':dates';
++
++my $Debug = $ENV{'LOGWATCH_DEBUG'} || 0;
++
++$SearchDate = TimeFilter('%b %e %H:%M:%S 20%y');
++
++# The date might be "Dec 09", but it needs to be "Dec  9"...
++#$SearchDate =~ s/ 0/  /;
++# The format of  Fri Nov 29 20:59:09 2005 
++
++if ( $Debug > 5 ) {
++   print STDERR "DEBUG: Inside ApplyStdDate...\n";
++   print STDERR "DEBUG: Looking For: " . $SearchDate . "\n";
++}
++
++while (defined($ThisLine = <STDIN>)) {
++   if ($ThisLine =~ m/(Mon|Tue|Wed|Thu|Fri|Sat|Sun) $SearchDate/o) {
++      print "$ThisLine";
++   }
++}
++
++# vi: shiftwidth=3 syntax=perl tabstop=3 et

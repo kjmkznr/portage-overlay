@@ -1,0 +1,11 @@
+--- logwatch/logwatch.8	2010-12-16 10:20:09.000000000 +0000
++++ logwatch/logwatch.8	2010-12-22 00:49:45.000000000 +0000
+@@ -38,7 +38,7 @@ 
+ This is the detail level of the report.
+ .I level
+ can be a positive integer, or high, med, low, which correspond to the
+-integers 10, 5, and 0, repectively.
++integers 10, 5, and 0, respectively.
+ .IP "\fB--logfile\fR log-file-group"
+ This will force Logwatch to process only the set of logfiles
+ defined by

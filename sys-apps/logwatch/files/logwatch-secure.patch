@@ -1,0 +1,45 @@
+--- logwatch-7.3.6/scripts/services/secure.pom	2011-03-06 23:03:06.000000000 +1100
++++ logwatch-7.3.6/scripts/services/secure	2011-03-06 23:03:50.000000000 +1100
+@@ -243,10 +243,12 @@
+       ( $ThisLine =~ /PAM pam_set_item: attempt to set conv\(\) to NULL/) or
+       ( $ThisLine =~ /PAM pam_get_item: nowhere to place requested item/) or
+       ( $ThisLine =~ /pam_succeed_if\(.*:.*\): error retrieving information about user [a-zA-Z]*/ ) or
++      ( $ThisLine =~ /pam_selinux_permit\(.*:.*\):/ ) or
+       ( $ThisLine =~ /logfile turned over/) or # newsyslog on OpenBSD
+       ( $ThisLine =~ /vmware-authd\[[0-9]+\]: PAM \[error: [^ ]+ cannot open shared object file: No such file or directory\]/) or
+       ( $ThisLine =~ /vmware-authd\[[0-9]+\]: PAM adding faulty module: [^ ]+/) or
+       ( $ThisLine =~ /Connection closed by/) or
++      ( $ThisLine =~ /Conversation error/) or
+       ( $ThisLine =~ /sshd.*: Accepted \S+ for \S+ from [\d\.:a-f]+ port \d+/) or # ssh script reads this log
+       ( $ThisLine =~ /userhelper.*: running (.*) with context (.*)/) or
+       ( $ThisLine =~ /userhelper.*: pam_thinkfinger(.*): conversation failed/) or
+@@ -254,7 +256,10 @@
+       ( $ThisLine =~ /polkit-grant-helper\[\d+\]: granted authorization for [^ ]* to uid [0-9]* \[auth=.*\]/) or
+       ( $ThisLine =~ /polkit-grant-helper\[\d+\]: granted authorization for [^ ]* to session .* \[uid=[0-9]*\]/) or
+       ( $ThisLine =~ /polkit-grant-helper-pam\[\d+\]: pam_thinkfinger\(polkit:auth\): conversation failed/) or
+-      ( $ThisLine =~ /gdm-session-worker\[\d+\]: gkr-pam: no password is available for user/) or
++      ( $ThisLine =~ /polkitd\(authority=.*\): (Unr|R)egistered Authentication Agent/) or
++      ( $ThisLine =~ /(gdm-session-worker|gdm-password)\[\d+\]: gkr-pam: no password is available for user/) or
++      ( $ThisLine =~ /gkr-pam: the password for the login keyring was invalid/) or
++      ( $ThisLine =~ /groupadd: group added to /) or	# Details in other messages
+       ( $ThisLine =~ /gdm-session-worker\[\d+\]: pam_namespace\(gdm:session\): Unmount of [^ ]* failed, Device or resource busy/)
+    ) {
+       # Ignore these entries
+@@ -379,7 +384,7 @@
+       $DeletedGroups .= "   $ThisLine\n";
+    } elsif ( $ThisLine =~ s/^(?:useradd|adduser)\[\d+\]: new group: name=(.+), (?:gid|GID)=(\d+).*$/$1 ($2)/ ) {
+       $NewGroups .= "   $ThisLine\n";
+-   } elsif ( (undef,$User,,undef,$Group) = ($ThisLine =~ /(usermod|useradd)\[\d+\]: add `([^ ]+)' to (shadow |)group `([^ ]+)'/ )) {
++   } elsif ( (undef,$User,,undef,$Group) = ($ThisLine =~ /(usermod|useradd)\[\d+\]: add [`']([^ ]+)' to (shadow |)group [`']([^ ]+)'/ )) {
+       $AddToGroup{$Group}{$User}++;
+    } elsif ( $ThisLine =~ s/^groupadd\[\d+\]: new group: name=(.+), (?:gid|GID)=(\d+).*$/$1 ($2)/ ) {
+       $NewGroups .= "   $ThisLine\n";
+@@ -472,7 +477,7 @@
+    } elsif ( ($Client,$User) = ($ThisLine =~ /vmware-authd\[\d+\]: login from ([0-9\.]+) as ([^ ]+)/) ) {
+       $UserLogin{$User}++;
+    } elsif ( ($User) = ($ThisLine =~ /vmware-authd\[\d+\]: pam_unix_auth\(vmware-authd:auth\): authentication failure; logname= uid=0 euid=0 tty= ruser= rhost=  user=([^ ]*)/) ) {
+-   } elsif ( ($User) = ($ThisLine =~ /useradd.*failed adding user `(.*)', data deleted/) ) {# failed adding user/)) {# (.*), data deleted/)) {
++   } elsif ( ($User) = ($ThisLine =~ /useradd.*failed adding user [`'](.*)', data deleted/) ) {# failed adding user/)) {# (.*), data deleted/)) {
+       # useradd: failed adding user `rpcuser', data deleted
+       $FailedAddUsers{$User}++;
+    } elsif (($User,$Reason) = ($ThisLine =~ /dovecot-auth: pam_userdb\(dovecot:auth\): user `(.*)' denied access \((.*)\)/)) {

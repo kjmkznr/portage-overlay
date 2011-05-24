@@ -1,0 +1,137 @@
+diff -up logwatch-svn46/scripts/services/named.dnssec logwatch-svn46/scripts/services/named
+--- logwatch-svn46/scripts/services/named.dnssec	2011-03-28 13:54:24.212725223 +0200
++++ logwatch-svn46/scripts/services/named	2011-03-28 14:08:21.044509429 +0200
+@@ -228,6 +228,7 @@ while (defined($ThisLine = <STDIN>)) {
+       ($ThisLine =~ /too many timeouts resolving '.*' .*: disabling EDNS/) or
+       ($ThisLine =~ /too many timeouts resolving '.*' .*: reducing the advertised EDNS UDP packet size to .* octets/) or
+       ($ThisLine =~ /reloading zones succeeded/) or
++      ($ThisLine =~ /generating session key/) or
+       ($ThisLine =~ /success resolving '.*' \(in '.*'?\) after disabling EDNS/) or
+       ($ThisLine =~ /success resolving '.*' \(in '.*'?\) after reducing the advertised EDNS UDP packet size to 512 octets/) or
+       ($ThisLine =~ /the working directory is not writable/) or
+@@ -249,6 +250,11 @@ while (defined($ThisLine = <STDIN>)) {
+       ($ThisLine =~ /refresh in progress, refresh check queued/) or
+       ($ThisLine =~ /refresh: NODATA response from master/) or
+       ($ThisLine =~ /update with no effect/) or
++      ($ThisLine =~ /reading built-in trusted keys from file/) or
++      ($ThisLine =~ /using built-in trusted-keys/) or
++      ($ThisLine =~ /set up managed keys zone/) or
++      # the following seems okay since it says "success"
++      ($ThisLine =~ /managed-keys-zone .*: No DNSKEY RRSIGs found for '.*': success/) or
+       # ignore this line because the following line describes the error
+       ($ThisLine =~ /unexpected error/)
+    ) {
+@@ -269,7 +275,8 @@ while (defined($ThisLine = <STDIN>)) {
+       $ShutdownNamed++;
+    } elsif ( $ThisLine =~ /named shutdown failed/ ) {
+       $ShutdownNamedFail++;
+-   } elsif ( ($Host, $Zone) = ( $ThisLine =~ /client ([^\#]+)#[^\:]+: zone transfer '(.+)' denied/ ) ) {
++   } elsif ( (($Host, $Zone) = ( $ThisLine =~ /client ([^\#]+)#[^\:]+: (?:view \w+: )?zone transfer '(.+)' denied/ )) or
++             (($Host, $Zone) = ( $ThisLine =~ /client ([^\#]+)#[^\:]+: (?:view \w+: )?bad zone transfer request: '(.+)':/ )) ) {
+       $DeniedZoneTransfers{$Host}{$Zone}++;
+    } elsif ( ($Zone) = ( $ThisLine =~ /zone (.+) zone transfer deferred due to quota/ ) ) {
+       $DeferredZoneTransfers{$Zone}++;
+@@ -291,14 +298,13 @@ while (defined($ThisLine = <STDIN>)) {
+       $ZoneLoaded{$Zone}++;
+    } elsif ( (undef,$Addr,undef,$Server) = ( $ThisLine =~ /ame server (on|resolving) '(.+)' \(in .+\):\s+(\[.+\]\.\d+)?\s*'?(.+)'?:?/ ) ) {
+       $LameServer{"$Addr ($Server)"}++;
+-   } elsif ( ($Zone) = ( $ThisLine =~ /Zone \"(.+)\" was removed/ ) ) {
++   } elsif ( (($Zone) = ( $ThisLine =~ /Zone \"(.+)\" was removed/ )) or
++             (($Zone) = ( $ThisLine =~ /zone (.+): \(.*\) removed/ )) ) {
+       $ZoneRemoved{$Zone}++;
+    } elsif ( ($Zone) = ( $ThisLine =~ /received notify for zone '(.*)'/ ) ) {
+       $ZoneReceivedNotify{$Zone}++;
+    } elsif ( ($Zone) = ( $ThisLine =~ /zone (.*): notify from .* up to date/ ) ) {
+       $ZoneReceivedNotify{$Zone}++;
+-   } elsif ( ($Zone) = ( $ThisLine =~ /zone (.*): notify from .* up to date/ ) ) {
+-      $ZoneReceivedNotify{$Zone}++;
+    } elsif ( ($Zone) = ( $ThisLine =~ /zone (.+)\/IN: refused notify from non-master/ ) ) {
+       $ZoneRefusedNotify{$Zone}++;
+ #   } elsif ( ($Rhost,$Ldom,$Reason) = ( $ThisLine =~ /client ([\d\.a-fA-F:]+) bad zone transfer request: '(.+)': (.+)$/ ) ) {
+@@ -321,13 +327,13 @@ while (defined($ThisLine = <STDIN>)) {
+    } elsif ( ($Client) = ( $ThisLine =~ /warning: client (.*) no more TCP clients/ ) ) {
+       $FullClient = LookupIP ($Client);
+       $DeniedTCPClient{$FullClient}++;
+-   } elsif ( ($Client) = ( $ThisLine =~ /client (.*)#\d+: query \(cache\) denied/ ) ) {
++   } elsif ( ($Client) = ( $ThisLine =~ /client (.*)#\d+: (?:view \w+: )?query \(cache\) denied/ ) ) {
+       $FullClient = LookupIP ($Client);
+       $DeniedQuery{$FullClient}++;
+    } elsif ( ($Client) = ( $ThisLine =~ /client (.*)#\d+: query '.*\/IN' denied/ ) ) {
+       $FullClient = LookupIP ($Client);
+       $DeniedQueryNoCache{$FullClient}++;
+-   } elsif ( ($Rhost, $ViewName, $Ldom) = ($ThisLine =~ /client ([\.0-9a-fA-F:]+)#\d+:(?: view ([^ ]+):)? update '(.*)' denied/)) {
++   } elsif ( ($Rhost, $ViewName, $Ldom) = ($ThisLine =~ /client ([\.0-9a-fA-F:]+)#\d+: (?:view \w+: )?update '(.*)' denied/)) {
+       $ViewName = ($ViewName ? "/$ViewName" : "");
+       $UpdateDenied{"$Rhost ($Ldom$ViewName)"}++;
+    } elsif ( ($Rhost, $Ldom) = ($ThisLine =~ /client ([\d\.]+)#\d+: update forwarding '(.*)' denied/)) {
+@@ -384,6 +390,18 @@ while (defined($ThisLine = <STDIN>)) {
+       $NoSOA{$Client}++;
+    } elsif (($Hint) = ($ThisLine =~ /checkhints: (.*)/) ) {
+       $Hints{$Hint}++;
++   } elsif (($Zone,$RR) = ($ThisLine =~ /^\s*validating \@0x[[:xdigit:]]+: (.*) (\w+): got insecure response; parent indicates it should be secure/)) {
++      $DNSSECInsec{'__Total__'}++;
++      $DNSSECInsec{$Zone}{$RR}++;
++   } elsif (($Zone,$RR) = ($ThisLine =~ /^\s*validating \@0x[[:xdigit:]]+: (.*) (\w+): no valid signature found/)) {
++      $DNSSECInvalid{'__Total__'}++;
++      $DNSSECInvalid{$Zone}{$RR}++;
++   } elsif (($Zone,$RR) = ($ThisLine =~ /^\s*validating \@0x[[:xdigit:]]+: (.*) (\w+): bad cache hit/)) {
++      $DNSSECBadCache{'__Total__'}++;
++      $DNSSECBadCache{$Zone}{$RR}++;
++   } elsif (($Error,$Host) = ($ThisLine =~ /error \((.*)\) resolving '([^']+)':/)) {
++      $DNSSECError{$Error}{'__Total__'}++;
++      $DNSSECError{$Error}{$Host}++;
+    } else {
+       # Report any unmatched entries...
+       # remove PID from named messages
+@@ -713,6 +731,51 @@ if (keys %Hints) {
+    }
+ }
+ 
++if (($Detail >= 5) and (keys %DNSSECInsec)) {
++   print "\n DNSSEC Insecure Responses: " . $DNSSECInsec{'__Total__'} . " Time(s)\n";
++   foreach $Zone (sort keys %DNSSECInsec) {
++      if (($Detail >= 10) and ($Zone =~ /.+/) and ($Zone ne '__Total__')) {
++        foreach $RR (sort keys %{$DNSSECInsec{$Zone}}) {
++           print "   " . "$Zone/$RR: " . $DNSSECInsec{$Zone}{$RR} . " Time(s)\n";
++        }
++      }
++   }
++}
++
++if (($Detail >= 5) and (keys %DNSSECInvalid)) {
++   print "\n DNSSEC No Valid Signature: " . $DNSSECInvalid{'__Total__'} . " Time(s)\n";
++   foreach $Zone (sort keys %DNSSECInvalid) {
++      if (($Detail >= 10) and ($Zone =~ /.+/) and ($Zone ne '__Total__')) {
++        foreach $RR (sort keys %{$DNSSECInvalid{$Zone}}) {
++           print "   " . "$Zone/$RR: " . $DNSSECInvalid{$Zone}{$RR} . " Time(s)\n";
++        }
++      }
++   }
++}
++
++if (($Detail >= 5) and (keys %DNSSECBadCache)) {
++   print "\n DNSSEC Bad Cache hit: " . $DNSSECBadCache{'__Total__'} . " Time(s)\n";
++   foreach $Zone (sort keys %DNSSECBadCache) {
++      if (($Detail >= 10) and ($Zone =~ /.+/) and ($Zone ne '__Total__')) {
++        foreach $RR (sort keys %{$DNSSECBadCache{$Zone}}) {
++           print "   " . "$Zone/$RR: " . $DNSSECBadCache{$Zone}{$RR} . " Time(s)\n";
++        }
++      }
++   }
++}
++
++if (($Detail >= 5) and (keys %DNSSECError)) {
++   print "\n DNS Errors:\n";
++   foreach $Error (sort keys %DNSSECError) {
++      print "   $Error: " . $DNSSECError{$Error}{'__Total__'} . " Time(s)\n";
++      if ($Detail >= 10) {
++         foreach $Host (sort keys %{$DNSSECError{$Error}}) {
++            print "     " . "$Host: " . $DNSSECError{$Error}{$Host} . " Time(s)\n" unless ($Host eq '__Total__');
++         }
++      }
++   }
++}
++
+ if (keys %OtherList) {
+    print "\n**Unmatched Entries**\n";
+    foreach $line (sort {$a cmp $b} keys %OtherList) {

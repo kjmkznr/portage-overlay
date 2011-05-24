@@ -1,0 +1,38 @@
+diff -up logwatch-svn46/scripts/services/xntpd.improve logwatch-svn46/scripts/services/xntpd
+--- logwatch-svn46/scripts/services/xntpd.improve	2011-03-28 14:47:20.203582860 +0200
++++ logwatch-svn46/scripts/services/xntpd	2011-03-28 14:48:14.978714233 +0200
+@@ -142,6 +142,7 @@ while (defined(my $ThisLine = <STDIN>)) 
+         ($ThisLine =~ m/tickadj = /) or # startup
+         ($ThisLine =~ m/precision = /) or # startup
+         ($ThisLine =~ m/ (succeeded|failed)/) or # startup
++        ($ThisLine =~ m/sendto\(\S+\): Success/) or # startup
+         ($ThisLine =~ m/kernel time (discipline|sync) status/) or # startup
+         ($ThisLine =~ m/kernel time sync (dis|en)abled /) or # startup
+         ($ThisLine =~ m/frequency initialized/) or # startup
+@@ -154,6 +155,8 @@ while (defined(my $ThisLine = <STDIN>)) 
+         ($ThisLine =~ /Listening on interface .* Disabled/) or
+         ($ThisLine =~ /Listen and drop on /) or
+         ($ThisLine =~ /Listening on routing socket on/) or
++	($ThisLine =~ /.* interface .* -> \(null\)/) or
++	($ThisLine =~/Deferring DNS for/) or
+ 	($ThisLine =~ /ntp_io: estimated max descriptors: \d*, initial socket boundary: \d*/)
+     ) {
+        # Ignore these
+@@ -174,7 +177,7 @@ while (defined(my $ThisLine = <STDIN>)) 
+     } elsif ( my (undef,$TimeStep) = ($ThisLine =~ /(offset) ([^ ]+) sec/ )) {
+        push @TimeReset, $TimeStep;
+     # MEv end no leadin to line
+-    } elsif ( my ($ListenOn) = ($ThisLine =~ /Listening on interface (.*)(?: Enabled)?/ )) {
++    } elsif ( my ($ListenOn) = ($ThisLine =~ /Listening on interface(?: #\d+)? (.*)(?: Enabled)?/ )) {
+        $Interfaces{$ListenOn}++;
+     } elsif ( my ($ListenOn) = ($ThisLine =~ /Listen normally on \d+ (.*)/ )) {
+        $Interfaces{$ListenOn}++;
+@@ -193,7 +196,7 @@ while (defined(my $ThisLine = <STDIN>)) 
+        $TwoInst{$name}++;
+     } elsif ( my ($Error) = ($ThisLine =~ /(no server(s reachable| suitable for synchronization found))/ )) {
+        $Errors{$Error}++;
+-    } elsif ( my ($Error) = ($ThisLine =~ /(can't find host \S+|no servers can be used, exiting)/ )) {
++    } elsif ( my ($Error) = ($ThisLine =~ /([Cc]an't find host \S+|no servers can be used, exiting)/ )) {
+        $Errors{$Error}++;
+     } elsif ( my ($Error) = ($ThisLine =~ /(sendto\(\S+\): Network is unreachable)/ )) {
+        $Errors{$Error}++;
