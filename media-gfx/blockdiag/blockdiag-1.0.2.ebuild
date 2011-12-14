@@ -21,10 +21,9 @@ IUSE="examples pdf"
 
 DEPEND="dev-python/setuptools"
 RDEPEND="dev-python/funcparserlib
-    dev-python/imaging
+	dev-python/imaging
 	dev-python/webcolors
-	pdf? ( dev-python/reportlab )
-	"
+	pdf? ( dev-python/reportlab )"
 
 DOCS="src/README.txt src/TODO.txt"
 
