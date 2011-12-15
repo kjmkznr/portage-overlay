@@ -1,6 +1,6 @@
 diff -uNr blockdiag-1.1.1.orig/setup.py blockdiag-1.1.1/setup.py
 --- blockdiag-1.1.1.orig/setup.py	2011-11-26 14:03:32.000000000 +0900
-+++ blockdiag-1.1.1/setup.py	2011-12-15 00:39:45.538721181 +0900
++++ blockdiag-1.1.1/setup.py	2011-12-15 23:55:00.476279092 +0900
 @@ -31,10 +31,12 @@
  
  requires = ['setuptools',
@@ -9,7 +9,7 @@ diff -uNr blockdiag-1.1.1.orig/setup.py blockdiag-1.1.1/setup.py
              'webcolors']
  deplinks = []
  
-+if sys.hexversion < 0x2070000:
++if sys.version_info < (2, 7):
 +    requires.append('OrderedDict')
 +
  # Find imaging libraries
@@ -17,7 +17,7 @@ diff -uNr blockdiag-1.1.1.orig/setup.py blockdiag-1.1.1/setup.py
      requires.append('PIL')
 diff -uNr blockdiag-1.1.1.orig/src/blockdiag/utils/fontmap.py blockdiag-1.1.1/src/blockdiag/utils/fontmap.py
 --- blockdiag-1.1.1.orig/src/blockdiag/utils/fontmap.py	2011-11-20 01:33:54.000000000 +0900
-+++ blockdiag-1.1.1/src/blockdiag/utils/fontmap.py	2011-12-15 00:39:58.658720949 +0900
++++ blockdiag-1.1.1/src/blockdiag/utils/fontmap.py	2011-12-15 23:54:18.556279820 +0900
 @@ -18,10 +18,11 @@
  import sys
  import copy
@@ -26,8 +26,17 @@ diff -uNr blockdiag-1.1.1.orig/src/blockdiag/utils/fontmap.py blockdiag-1.1.1/sr
  from ConfigParser import SafeConfigParser
  from blockdiag.utils.collections import namedtuple
  
-+if sys.hexversion < 0x2070000:
++if sys.version_info < (2, 7):
 +    from ordereddict import OrderedDict
  
  class FontInfo(object):
      def __init__(self, family, path, size):
+@@ -93,7 +94,7 @@
+         self.set_default_font(None)
+ 
+     def _parse_config(self, conffile):
+-        if sys.version_info > (2, 6):
++        if sys.version_info > (2, 6) and sys.version_info < (2, 7):
+             config = SafeConfigParser(dict_type=OrderedDict)
+         else:
+             config = SafeConfigParser()
