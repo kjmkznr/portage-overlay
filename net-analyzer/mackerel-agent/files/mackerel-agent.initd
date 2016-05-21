@@ -1,0 +1,20 @@
+#!/sbin/openrc-run
+# Copyright 2015 Gentoo Foundation
+# Distributed under the terms of the GNU General Public License v2
+# $Id$
+
+description="mackerel-agent"
+group=${group:-${SVCNAME}}
+pidfile=${pidfile:-"/run/${SVCNAME}.pid"}
+LOGFILE=${LOGFILE:-"/var/log/${SVCNAME}.log"}
+
+command="/usr/bin/${SVCNAME}"
+command_args="--pidfile=$pidfile"
+command_background="true"
+start_stop_daemon_args="-1 ${LOGFILE} -2 ${LOGFILE}"
+
+depend() {
+	need net
+	after net
+}
+
