@@ -2,23 +2,25 @@
 # Distributed under the terms of the GNU General Public License v2
 # $Header: /var/cvsroot/gentoo-x86/app-i18n/atokx3/atokx3-3.0.0-r11.ebuild,v 1.1 2014/11/12 17:59:52 axs Exp $
 
-EAPI=5
+EAPI="5"
 
-inherit cdrom eutils gnome2-utils multilib
+inherit cdrom eutils gnome2-utils multilib-build
 
 MY_UPDATE_P="${PN}up2"
 MY_UPDATE_GTK="${PN}gtk216"
+MY_ZIPCODE_P="a20y1406lx"
 
 DESCRIPTION="ATOK X3 for Linux - The most famous Japanese Input Method Engine"
 HOMEPAGE="http://www.justsystems.com/jp/products/atok_linux/"
 SRC_URI="https://gate.justsystems.com/download/atok/up/lin/${MY_UPDATE_P}.tar.gz
-	https://gate.justsystems.com/download/atok/up/lin/${MY_UPDATE_GTK}.tar.gz"
+	https://gate.justsystems.com/download/atok/up/lin/${MY_UPDATE_GTK}.tar.gz
+	https://gate.justsystems.com/download/zipcode/up/lin/${MY_ZIPCODE_P}.tgz"
 
 LICENSE="ATOK MIT"
 
 SLOT="0"
 KEYWORDS="-* ~amd64 ~x86"
-IUSE="multilib"
+MULTILIB_COMPAT=( abi_x86_{32,64} )
 
 RESTRICT="strip mirror"
 
@@ -51,7 +53,7 @@ RDEPEND="!app-i18n/atokx2
 	x11-libs/libXxf86vm
 	x11-libs/libdrm
 	x11-libs/pangox-compat
-	multilib? (
+	amd64? (
 		|| (
 			(
 				>=dev-libs/glib-2.34.3:2[abi_x86_32(-)]
@@ -64,10 +66,10 @@ RDEPEND="!app-i18n/atokx2
 		)
 		|| (
 			(
-				>=dev-libs/atk-2.10.0[abi_x86_32]
-				>=x11-libs/cairo-1.12.14-r4[abi_x86_32]
-				>=x11-libs/gtk+-2.24.23:2[abi_x86_32]
-				>=x11-libs/pangox-compat-0.0.2[abi_x86_32]
+				>=dev-libs/atk-2.10.0[abi_x86_32(-)]
+				>=x11-libs/cairo-1.12.14-r4[abi_x86_32(-)]
+				>=x11-libs/gtk+-2.24.23:2[abi_x86_32(-)]
+				>=x11-libs/pangox-compat-0.0.2[abi_x86_32(-)]
 			)
 			app-emulation/emul-linux-x86-gtklibs[-abi_x86_32(-)]
 		)
@@ -133,7 +135,7 @@ src_unpack() {
 	#	IIIMF/iiimf-docs-trunk_r3104-js*.i386.tar.gz
 	#	IIIMF/iiimf-notuse-trunk_r3104-js*.i386.tar.gz
 
-	if use amd64 ; then
+	if use abi_x86_64 ; then
 		targets="${targets}
 			IIIMF/iiimf-client-lib-64-trunk_r3104-js*.x86_64.tar.gz
 			IIIMF/iiimf-gtk-64-trunk_r3104-js*.x86_64.tar.gz
@@ -161,10 +163,11 @@ src_unpack() {
 		fi
 	done
 	unpack ${MY_UPDATE_GTK}.tar.gz
+	unpack ${MY_ZIPCODE_P}.tgz
 }
 
 src_prepare() {
-	if use amd64 ; then
+	if use abi_x86_64 ; then
 		local lib32="$(ABI=x86 get_libdir)"
 		local lib64="$(get_libdir)"
 		if [ "lib" != "${lib32}" ] ; then
@@ -192,7 +195,7 @@ src_install() {
 	cp -dpR * "${ED}" || die
 
 	# amd64 hack
-	if use amd64 ; then
+	if use abi_x86_64 ; then
 		local lib32="$(ABI=x86 get_libdir)"
 		local lib64="$(get_libdir)"
 		if [ "${lib32}" != "${lib64}" ] ; then
@@ -217,7 +220,7 @@ src_install() {
 
 pkg_preinst() {
 	# bug #343325
-	if use amd64 && has_multilib_profile && [ -L "${EPREFIX}/usr/$(get_libdir)/iiim" ] ; then
+	if use abi_x86_64 && has_multilib_profile && [ -L "${EPREFIX}/usr/$(get_libdir)/iiim" ] ; then
 		rm -f "${EPREFIX}/usr/$(get_libdir)/iiim"
 	fi
 }
@@ -228,9 +231,9 @@ pkg_postinst() {
 	elog
 	elog ". /opt/atokx3/bin/atokx3start.sh"
 	elog
-	gnome2_query_immodules_gtk2
+	multilib_foreach_abi gnome2_query_immodules_gtk2
 }
 
 pkg_postrm() {
-	gnome2_query_immodules_gtk2
+	multilib_foreach_abi gnome2_query_immodules_gtk2
 }
