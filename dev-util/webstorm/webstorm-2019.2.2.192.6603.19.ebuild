@@ -3,11 +3,11 @@
 
 EAPI=6
 
-inherit eutils
+inherit eutils versionator
 
 DESCRIPTION="JavaScript IDE for client- and server-side development with Node.js"
 HOMEPAGE="http://www.jetbrains.com/webstorm"
-SRC_URI="http://download.jetbrains.com/webstorm/WebStorm-${PV}.tar.gz"
+SRC_URI="http://download.jetbrains.com/webstorm/WebStorm-$(get_version_component_range 1-3).tar.gz"
 
 LICENSE="IDEA
 	|| ( IDEA_Academic IDEA_Classroom IDEA_OpenSource IDEA_Personal )"
@@ -19,10 +19,10 @@ IUSE=""
 
 RDEPEND="virtual/jdk"
 
-S="${WORKDIR}/WebStorm-${PV}"
+S="${WORKDIR}/WebStorm-$(get_version_component_range 4-6)"
 
 src_install() {
-	local dir="/opt/${P}"
+	local dir="/opt/$(get_version_component_range 1-3)"
 
 	insinto "${dir}"
 	doins -r *
