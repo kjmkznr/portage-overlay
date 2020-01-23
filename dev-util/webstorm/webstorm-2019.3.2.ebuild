@@ -9,9 +9,23 @@ DESCRIPTION="JavaScript IDE for client- and server-side development with Node.js
 HOMEPAGE="http://www.jetbrains.com/webstorm"
 SRC_URI="http://download.jetbrains.com/webstorm/WebStorm-$(get_version_component_range 1-3).tar.gz"
 
-LICENSE="IDEA
-	|| ( IDEA_Academic IDEA_Classroom IDEA_OpenSource IDEA_Personal )"
-
+LICENSE="|| ( JetBrains-business JetBrains-classroom JetBrains-educational JetBrains-individual )
+        Apache-2.0
+        BSD
+        CC0-1.0
+        CDDL
+        CDDL-1.1
+        EPL-1.0
+        GPL-2
+        GPL-2-with-classpath-exception
+        ISC
+        LGPL-2.1
+        LGPL-3
+        MIT
+        MPL-1.1
+        OFL
+        ZLIB
+"
 SLOT=0
 
 KEYWORDS="~amd64 ~x86"
@@ -19,10 +33,11 @@ IUSE=""
 
 RDEPEND="virtual/jdk"
 
-S="${WORKDIR}/WebStorm-$(get_version_component_range 4-6)"
+BUILD_NUMBER="193.6015.40"
+S="${WORKDIR}/WebStorm-${BUILD_NUMBER}"
 
 src_install() {
-	local dir="/opt/$(get_version_component_range 1-3)"
+	local dir="/opt/${P}"
 
 	insinto "${dir}"
 	doins -r *
