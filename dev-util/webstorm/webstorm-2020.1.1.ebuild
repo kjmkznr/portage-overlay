@@ -33,7 +33,7 @@ IUSE=""
 
 RDEPEND="virtual/jdk"
 
-BUILD_NUMBER="201.6668.106"
+BUILD_NUMBER="201.7223.93"
 S="${WORKDIR}/WebStorm-${BUILD_NUMBER}"
 
 src_install() {
