@@ -33,7 +33,7 @@ IUSE=""
 
 RDEPEND="virtual/jdk"
 
-BUILD_NUMBER="202.8194.6"
+BUILD_NUMBER="212.5457.55"
 S="${WORKDIR}/WebStorm-${BUILD_NUMBER}"
 
 src_install() {
@@ -41,7 +41,7 @@ src_install() {
 
 	insinto "${dir}"
 	doins -r *
-	fperms 755 "${dir}"/bin/{${PN}.sh,fsnotifier{,64}}
+	fperms 755 "${dir}"/bin/{${PN}.sh,fsnotifier}
 	fperms 755 "${dir}"/jbr/bin/{jaotc,java,javac,jdb,jfr,jhsdb,jjs,jrunscript,keytool,pack200,rmid,rmiregistry,serialver,unpack200}
 
 	make_wrapper "${PN}" "${dir}/bin/${PN}.sh"
